@@ -14,7 +14,7 @@ export interface ValidationResult {
  */
 export function validatePhoneNumber(phone: string): boolean {
   // WhatsApp format validation (can be various formats)
-  const cleaned = phone.replace(/\D/g, '');
+  const cleaned = phone.replaceAll(/\D/g, '');
   return cleaned.length >= 7 && cleaned.length <= 15;
 }
 
@@ -22,22 +22,22 @@ export function validatePhoneNumber(phone: string): boolean {
  * Validate message content length
  */
 export function validateMessageLength(content: string, maxLength: number = 4096): boolean {
-  return content && content.trim().length > 0 && content.length <= maxLength;
+  return !!(content && content.trim().length > 0 && content.length <= maxLength);
 }
 
 /**
  * Validate price (must be positive number)
  */
 export function validatePrice(price: any): boolean {
-  const num = parseFloat(price);
-  return !isNaN(num) && num > 0 && num < 1000000000; // Up to 1 billion
+  const num = Number.parseFloat(price);
+  return !Number.isNaN(num) && num > 0 && num < 1000000000; // Up to 1 billion
 }
 
 /**
  * Validate property address
  */
 export function validateAddress(address: string, minLength: number = 5): boolean {
-  return address && address.trim().length >= minLength;
+  return !!(address && address.trim().length >= minLength);
 }
 
 /**
@@ -53,7 +53,8 @@ export function validateEmail(email: string): boolean {
  */
 export function validateUrl(url: string): boolean {
   try {
-    new URL(url);
+    // eslint-disable-next-line no-new
+    new (globalThis as any).URL(url);
     return true;
   } catch {
     return false;
@@ -65,9 +66,9 @@ export function validateUrl(url: string): boolean {
  */
 export function sanitizeText(text: string): string {
   return text
-    .replace(/[<>]/g, '') // Remove < >
-    .replace(/javascript:/gi, '') // Remove javascript:
-    .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    .replaceAll(/[<>]/g, '') // Remove < >
+    .replaceAll(/javascript:/gi, '') // Remove javascript:
+    .replaceAll(/on\w+\s*=/gi, '') // Remove event handlers
     .trim();
 }
 
@@ -134,11 +135,11 @@ export class MessageValidator {
       errors.push('Address too short (minimum 5 characters)');
     }
 
-    if (data.bedrooms && (isNaN(data.bedrooms) || data.bedrooms < 0 || data.bedrooms > 20)) {
+    if (data.bedrooms && (Number.isNaN(data.bedrooms) || data.bedrooms < 0 || data.bedrooms > 20)) {
       errors.push('Invalid number of bedrooms');
     }
 
-    if (data.bathrooms && (isNaN(data.bathrooms) || data.bathrooms < 0 || data.bathrooms > 10)) {
+    if (data.bathrooms && (Number.isNaN(data.bathrooms) || data.bathrooms < 0 || data.bathrooms > 10)) {
       errors.push('Invalid number of bathrooms');
     }
 
@@ -196,7 +197,7 @@ export class MessageValidator {
     return {
       isValid: true,
       errors: [],
-      warnings: sanitized !== content ? ['Message was sanitized for safety'] : [],
+      warnings: sanitized === content ? [] : ['Message was sanitized for safety'],
     };
   }
 }
